@@ -55,8 +55,13 @@ app.patch('/campgrounds/:id',async(req,res) => {
     let {id}=req.params
     let campground=req.body.campground
     let newCampground=await Campground.findByIdAndUpdate(id,campground,{runValidators : true,new : true})
-    console.log(newCampground)
     res.redirect(`/campgrounds/${newCampground._id}`)
+})
+
+app.delete('/campgrounds/:id',async(req,res) => {
+    let {id}=req.params
+    await Campground.findByIdAndDelete(id)
+    res.redirect('/campgrounds')
 })
 
 let port=3000
