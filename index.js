@@ -3,7 +3,7 @@ const mongoose=require('mongoose')
 const path=require('path')
 const Campground=require('./models/campgrounds.js')
 
-app=express()
+app =express()
 
 mongoose.connect('mongodb://127.0.0.1:27017/yelp-camp')
 .then(() => console.log('database connected'))
@@ -18,10 +18,9 @@ app.get('/',(req,res) => {
     res.render('home.ejs')
 })
 
-app.get('/makeCampground',async (req,res) => {
-    const camp = new Campground({title : 'My Backyard',description : 'Cheap Camping'})
-    await camp.save()
-    res.send(camp)
+app.get('/campgrounds',async (req,res) => {
+    const campgrounds=await Campground.find({})
+    res.render('campgrounds/index.ejs',{campgrounds})
 })
 
 let port=3000
