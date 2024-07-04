@@ -6,7 +6,8 @@ const ejsMate=require('ejs-mate')
 const Campground=require('./models/campgrounds.js')
 const catchAsync=require('./utilities/catchAsync.js')
 const expressError=require('./utilities/expressErrors.js')
-const { error } = require('console')
+const joi=require('joi')
+const {campgroundSchema}=require('./schemas.js')
 
 const app =express()
 
@@ -22,7 +23,17 @@ app.set('views',path.join(__dirname,'views'))
 app.use(express.urlencoded({extended : true}))
 app.use(methodOverride('_method'))      //express middleware to for methodOverride
 
-
+//custom middleware to validate campgrounds
+const validateCampground= (req,res,next) => {
+    const {error}=campgroundSchema.validate(req.body)
+    if(error){
+        let msg=error.details.map(el => el.message).join(',')
+        throw new expressError(msg,400)
+    }
+    else{
+        next()
+    }
+}
 
 
 app.get('/campgrounds', catchAsync(async (req,res) => {
@@ -30,14 +41,16 @@ app.get('/campgrounds', catchAsync(async (req,res) => {
     res.render('campgrounds/index.ejs',{campgrounds})
 }))
 
-app.post('/campgrounds',catchAsync(async(req,res,next) => {
-    if(req.body.campground === undefined){
-        throw(new expressError('Invalid campground data',400))
-    }
-        const campground=new Campground(req.body.campground)
-        console.log(req.body.campground)
-        await campground.save()
-        res.redirect(`/campgrounds/${campground._id}`)
+app.post('/campgrounds',validateCampground,catchAsync(async(req,res,next) => {
+    // if(req.body.campground === undefined){
+    //     throw(new expressError('Invalid campground data',400))
+    // }
+
+    
+    const campground=new Campground(req.body.campground)
+    console.log(req.body.campground)
+    await campground.save()
+    res.redirect(`/campgrounds/${campground._id}`)
    
     // new Campground()
 }))
@@ -58,7 +71,7 @@ app.get('/campgrounds/:id/edit', catchAsync(async(req,res) => {
     res.render('campgrounds/edit.ejs',{campground})
 }))
 
-app.patch('/campgrounds/:id',catchAsync(async(req,res) => {
+app.patch('/campgrounds/:id',validateCampground,catchAsync(async(req,res) => {
     let {id}=req.params
     let campground=req.body.campground
     let newCampground=await Campground.findByIdAndUpdate(id,campground,{runValidators : true,new : true})
