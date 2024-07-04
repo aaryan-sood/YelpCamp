@@ -88,6 +88,7 @@ app.all('*',(req,res,next) => {
     next(new expressError('Page Not Found',404))
 })
 
+// error handler
 app.use((err,req,res,next) => {
     let {statusCode = 500}=err
     if(!err.message){
