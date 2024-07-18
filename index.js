@@ -7,7 +7,7 @@ const Campground=require('./models/campgrounds.js')
 const catchAsync=require('./utilities/catchAsync.js')
 const expressError=require('./utilities/expressErrors.js')
 const joi=require('joi')
-const {campgroundSchema}=require('./schemas.js')
+const {campgroundSchema,reviewSchema}=require('./schemas.js')
 const Review=require('./models/reviews.js') 
 
 const app =express()
@@ -34,6 +34,17 @@ const validateCampground= (req,res,next) => {
     else{
         next()
 }}
+
+const validateReview=(req,res,next) => {
+    let {error}=reviewSchema.validate(req.body)
+    console.log(reviewSchema.validate(req.body))
+    if(error){
+        let msg=error.details.map(el => el.message).join(',')
+        throw new expressError(msg,400)
+    }else{
+        next()
+    }
+}
 
 
 app.get('/campgrounds', catchAsync(async (req,res) => {
@@ -84,7 +95,7 @@ app.delete('/campgrounds/:id',catchAsync(async(req,res) => {
     res.redirect('/campgrounds')
 })) 
 
-app.post('/campgrounds/:id/reviews',catchAsync(async (req,res) => {
+app.post('/campgrounds/:id/reviews',validateReview,catchAsync(async (req,res) => {
     let {id}=req.params
     let camp=await Campground.findById(id)
     let review= new Review(req.body.review)
