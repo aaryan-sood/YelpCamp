@@ -34,7 +34,7 @@ const validateCampground= (req,res,next) => {
     else{
         next()
 }}
-
+// middleware to validate reviews
 const validateReview=(req,res,next) => {
     let {error}=reviewSchema.validate(req.body)
     console.log(reviewSchema.validate(req.body))
@@ -72,7 +72,7 @@ app.get('/campgrounds/new',(req,res) => {
 
 app.get('/campgrounds/:id',catchAsync(async(req,res) => {
     let {id}=req.params
-    let campground=await Campground.findById(id)
+    let campground=await Campground.findById(id).populate('reviews')
     res.render('campgrounds/show.ejs',{campground})
 }))
 
